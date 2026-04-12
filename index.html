@@ -204,8 +204,7 @@
     </div>
 
     <script>
-        // Dummy data
-        const dummyItems = [
+        let items = [
             { id: 1, image: 'jennie.jpg', type: 'ID', name: 'Student ID', location: 'Food Square', status: 'Lost', description: 'Black DLSU-D student ID with lanyard. Lost near Food Square entrance.' },
             { id: 2, image: 'air_pods.avif', type: 'Gadget', name: 'AirPods Pro', location: 'JFH', status: 'Found', description: 'White AirPods Pro case found under seat in JFH room 301.' },
             { id: 3, image: 'notebook.jpg', type: 'School Supplies', name: 'Notebook', location: 'Aklatang Emilio Aguinaldo', status: 'Claimed', description: 'Black Moleskine notebook with math notes. Found on library table.' },
@@ -213,9 +212,8 @@
             { id: 5, image: 'powerbank.jpg', type: 'Gadget', name: 'Powerbank', location: 'Food Square', status: 'Lost', description: 'Anker 20,000mAh powerbank, black color.' },
             { id: 6, image: 'squid_game.jpg', type: 'ID', name: 'Faculty ID', location: 'JFH', status: 'Returned', description: 'DLSU-D faculty ID card.' },
         ];
-
-        let currentItem = null;
-        let items = [...dummyItems];
+        let nextId = 7;
+        
         let messages = [
             { text: "Hi! I found your AirPods at JFH. Are you available to pick them up?", sender: 'other', time: '10:30 AM' },
             { text: "Yes! Thank you so much! Can I meet you at Food Square in 30 mins?", sender: 'own', time: '10:32 AM' },
@@ -245,7 +243,7 @@
         });
 
         function filterItems(filter = 'all', search = '') {
-            let filtered = dummyItems.filter(item => {
+            let filtered = items.filter(item => {  // Changed from dummyItems to items
                 const matchesFilter = filter === 'all' || item.type === filter;
                 const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                                     item.description.toLowerCase().includes(search.toLowerCase());
@@ -254,7 +252,7 @@
             renderItems(filtered);
         }
 
-        function renderItems(itemsToRender = dummyItems) {
+        function renderItems(itemsToRender = items) {  // Changed default from dummyItems to items
             const grid = document.getElementById('itemsGrid');
             grid.innerHTML = itemsToRender.map(item => `
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showItemDetails(${item.id})">
@@ -272,7 +270,7 @@
         }
 
         function showItemDetails(id) {
-            currentItem = dummyItems.find(item => item.id === id);
+            currentItem = items.find(item => item.id === id);
             if (currentItem) {
                 document.getElementById('detailImage').src = currentItem.image;
                 document.getElementById('detailTitle').textContent = currentItem.name;
@@ -300,13 +298,36 @@
 
         document.getElementById('postForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Simulate posting
-            alert('Item posted successfully! 🎉');
+            
+            // Get form data
+            const imagePreview = document.getElementById('imagePreview').src;
+            const itemType = document.getElementById('itemType').value;
+            const location = document.getElementById('location').value;
+            const description = document.getElementById('description').value;
+            const status = document.getElementById('status').value;
+            
+            // Create new item
+            const newItem = {
+                id: nextId++,
+                image: imagePreview || 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400', // fallback image
+                type: itemType,
+                name: `${itemType} - ${location}`, // Auto-generate name
+                location: location,
+                status: status,
+                description: description
+            };
+            
+            // ADD TO ITEMS ARRAY ✅
+            items.unshift(newItem);  // Add to beginning so it appears first
+            
+            // Reset form
             document.getElementById('postForm').reset();
             document.getElementById('imagePreview').classList.add('hidden');
+            
+            // Success message & navigate
+            alert('✅ Item posted successfully! Check Home page.');
             showPage('home');
         });
-
         // Chat functionality
         function showChat() {
             renderMessages();
@@ -372,10 +393,9 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderItems();
-            // Set active filter
-            document.querySelector('.filter-btn[data-filter="all"]').classList.add('bg-green-200', 'active');
+       document.addEventListener('DOMContentLoaded', () => {
+            renderItems(items);  // Pass items explicitly
+            document.querySelector('.filter-btn[data-filter="all"]').classList.add('bg-green-200');
         });
 
         // Close modal on outside click
