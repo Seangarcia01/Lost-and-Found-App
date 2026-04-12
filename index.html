@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLSU-D Lost & Found</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .status-lost { background-color: #ef4444; }
+        .status-found { background-color: #10b981; }
+        .status-claimed { background-color: #f59e0b; }
+        .status-returned { background-color: #6b7280; }
+        .message-bubble-own { background-color: #10b981; }
+        .message-bubble-other { background-color: #e5e7eb; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-green-600">DLSU-D Lost & Found</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showPage('home')" class="text-green-600 hover:text-green-800 font-medium px-3 py-2 rounded-md text-sm">Home</button>
+                    <button onclick="showPage('post')" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 font-medium">Post Item</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Search & Filters -->
+            <div class="mb-8">
+                <div class="relative mb-6">
+                    <input type="text" id="searchInput" placeholder="Search items..." class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="filter-btn px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium hover:bg-green-200 active" data-filter="all">All</button>
+                    <button class="filter-btn px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium" data-filter="ID">ID</button>
+                    <button class="filter-btn px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium" data-filter="Gadget">Gadget</button>
+                    <button class="filter-btn px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium" data-filter="School Supplies">School Supplies</button>
+                    <button class="filter-btn px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium" data-filter="Others">Others</button>
+                </div>
+            </div>
+
+            <!-- Items Grid -->
+            <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Items will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Item Page -->
+    <div id="post" class="page hidden">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Post New Item</h2>
+            <form id="postForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Item Image <span class="text-red-500">*</span></label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-400 transition-colors">
+                        <input type="file" id="itemImage" accept="image/*" class="hidden" required>
+                        <label for="itemImage" class="cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4 block"></i>
+                            <p class="text-lg font-medium text-gray-900 mb-1">Upload Image</p>
+                            <p class="text-sm text-gray-500">PNG, JPG up to 5MB</p>
+                        </label>
+                        <img id="imagePreview" class="mt-4 mx-auto max-h-48 rounded-lg hidden">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Item Type</label>
+                    <select id="itemType" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                        <option>ID</option>
+                        <option>Gadget</option>
+                        <option>School Supplies</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <select id="location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                        <option>Food Square</option>
+                        <option>Aklatang Emilio Aguinaldo</option>
+                        <option>JFH</option>
+                        <option>PCH</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="description" rows="4" placeholder="Detailed description of the item..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" required></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                        <option>Lost</option>
+                        <option>Found</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 font-semibold text-lg transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Post Item
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Item Details Page -->
+    <div id="details" class="page hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <button onclick="showPage('home')" class="mb-8 inline-flex items-center text-green-600 hover:text-green-800 font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Home
+            </button>
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <img id="detailImage" class="w-full h-96 object-cover" src="" alt="">
+                <div class="p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h1 id="detailTitle" class="text-3xl font-bold text-gray-900">Item Title</h1>
+                        <span id="detailStatus" class="px-4 py-2 rounded-full text-white font-medium text-sm status-lost">Lost</span>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-2">Location</p>
+                            <p id="detailLocation" class="text-xl font-semibold text-gray-900">Location</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-2">Item Type</p>
+                            <p id="detailType" class="text-xl font-semibold text-gray-900">Type</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-4">Description</p>
+                        <p id="detailDescription" class="text-lg text-gray-700 leading-relaxed"></p>
+                    </div>
+                    <div class="flex space-x-4 mt-12">
+                        <button onclick="showChat()" class="flex-1 bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 font-semibold transition-colors">
+                            <i class="fas fa-message mr-2"></i>Message Owner/Finder
+                        </button>
+                        <button onclick="showClaimModal()" class="flex-1 bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 font-semibold transition-colors">
+                            <i class="fas fa-check mr-2"></i>Claim Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat" class="page hidden">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 h-screen flex flex-col">
+            <div class="flex items-center mb-8">
+                <button onclick="showPage('details')" class="mr-4 text-green-600 hover:text-green-800">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">John Doe</h2>
+                    <p class="text-green-600 font-medium">Online</p>
+                </div>
+            </div>
+            
+            <div id="chatMessages" class="flex-1 overflow-y-auto space-y-4 mb-6 p-4 bg-white rounded-2xl shadow-lg">
+                <!-- Messages populated by JS -->
+            </div>
+            
+            <div class="bg-white p-4 rounded-2xl shadow-lg">
+                <div class="flex space-x-3">
+                    <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <button onclick="sendMessage()" class="bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition-colors">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim Verification Modal -->
+    <div id="claimModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Verify Ownership</h3>
+            <p class="text-gray-600 mb-6">Describe the item to prove ownership</p>
+            <textarea id="claimDescription" rows="5" placeholder="e.g., It has a blue sticker on the back, serial number ABC123..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent mb-6"></textarea>
+            <div class="flex space-x-3">
+                <button onclick="closeClaimModal()" class="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-xl hover:bg-gray-300 transition-colors font-medium">Cancel</button>
+                <button onclick="submitClaim()" class="flex-1 bg-green-600 text-white py-3 px-6 rounded-xl hover:bg-green-700 transition-colors font-medium">Submit Claim</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dummy data
+        const dummyItems = [
+            { id: 1, image: 'jennie.jpg', type: 'ID', name: 'Student ID', location: 'Food Square', status: 'Lost', description: 'Black DLSU-D student ID with lanyard. Lost near Food Square entrance.' },
+            { id: 2, image: 'air_pods.avif', type: 'Gadget', name: 'AirPods Pro', location: 'JFH', status: 'Found', description: 'White AirPods Pro case found under seat in JFH room 301.' },
+            { id: 3, image: 'notebook.jpg', type: 'School Supplies', name: 'Notebook', location: 'Aklatang Emilio Aguinaldo', status: 'Claimed', description: 'Black Moleskine notebook with math notes. Found on library table.' },
+            { id: 4, image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400', type: 'Others', name: 'Water Bottle', location: 'PCH', status: 'Found', description: 'Stanley stainless steel water bottle, green color.' },
+            { id: 5, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400', type: 'Gadget', name: 'Powerbank', location: 'Food Square', status: 'Lost', description: 'Anker 20,000mAh powerbank, black color.' },
+            { id: 6, image: 'squid_game.jpg', type: 'ID', name: 'Faculty ID', location: 'JFH', status: 'Returned', description: 'DLSU-D faculty ID card.' },
+        ];
+
+        let currentItem = null;
+        let items = [...dummyItems];
+        let messages = [
+            { text: "Hi! I found your AirPods at JFH. Are you available to pick them up?", sender: 'other', time: '10:30 AM' },
+            { text: "Yes! Thank you so much! Can I meet you at Food Square in 30 mins?", sender: 'own', time: '10:32 AM' },
+            { text: "Perfect! See you there.", sender: 'other', time: '10:33 AM' },
+        ];
+
+        // Page management
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            if (pageId === 'home') renderItems();
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-green-200', 'bg-green-600', 'text-white'));
+                e.target.classList.add('bg-green-600', 'text-white');
+                filterItems(e.target.dataset.filter);
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            filterItems(document.querySelector('.filter-btn.active')?.dataset.filter || 'all', e.target.value);
+        });
+
+        function filterItems(filter = 'all', search = '') {
+            let filtered = dummyItems.filter(item => {
+                const matchesFilter = filter === 'all' || item.type === filter;
+                const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
+                                    item.description.toLowerCase().includes(search.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+            renderItems(filtered);
+        }
+
+        function renderItems(itemsToRender = dummyItems) {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = itemsToRender.map(item => `
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showItemDetails(${item.id})">
+                    <img src="${item.image}" alt="${item.name}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">${item.name}</h3>
+                        <p class="text-gray-600 mb-3">${item.location}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 rounded-full text-white text-sm font-medium status-${item.status.toLowerCase()}">${item.status}</span>
+                            <span class="text-sm font-medium text-green-600">${item.type}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showItemDetails(id) {
+            currentItem = dummyItems.find(item => item.id === id);
+            if (currentItem) {
+                document.getElementById('detailImage').src = currentItem.image;
+                document.getElementById('detailTitle').textContent = currentItem.name;
+                document.getElementById('detailStatus').textContent = currentItem.status;
+                document.getElementById('detailStatus').className = `px-4 py-2 rounded-full text-white font-medium text-sm status-${currentItem.status.toLowerCase()}`;
+                document.getElementById('detailLocation').textContent = currentItem.location;
+                document.getElementById('detailType').textContent = currentItem.type;
+                document.getElementById('detailDescription').textContent = currentItem.description;
+                showPage('details');
+            }
+        }
+
+                // Post form
+        document.getElementById('itemImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('postForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Simulate posting
+            alert('Item posted successfully! 🎉');
+            document.getElementById('postForm').reset();
+            document.getElementById('imagePreview').classList.add('hidden');
+            showPage('home');
+        });
+
+        // Chat functionality
+        function showChat() {
+            renderMessages();
+            showPage('chat');
+        }
+
+        function renderMessages() {
+            const chatContainer = document.getElementById('chatMessages');
+            chatContainer.innerHTML = messages.map(msg => `
+                <div class="flex ${msg.sender === 'own' ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${msg.sender === 'own' ? 'message-bubble-own text-white' : 'message-bubble-other bg-gray-200 text-gray-900'}">
+                        <p>${msg.text}</p>
+                        <p class="text-xs mt-1 opacity-75">${msg.time}</p>
+                    </div>
+                </div>
+            `).join('');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (text) {
+                messages.push({ text, sender: 'own', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+                input.value = '';
+                renderMessages();
+            }
+        }
+
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Claim modal
+        function showClaimModal() {
+            document.getElementById('claimModal').classList.remove('hidden');
+        }
+
+        function closeClaimModal() {
+            document.getElementById('claimModal').classList.add('hidden');
+            document.getElementById('claimDescription').value = '';
+        }
+
+        function submitClaim() {
+            const description = document.getElementById('claimDescription').value.trim();
+            if (description) {
+                alert('Claim submitted successfully! The owner/finder will be notified. ✅');
+                closeClaimModal();
+            } else {
+                alert('Please describe the item to verify ownership.');
+            }
+        }
+
+        // Status class updater
+        function updateStatusClass(element, status) {
+            const statusClasses = {
+                'Lost': 'status-lost',
+                'Found': 'status-found',
+                'Claimed': 'status-claimed',
+                'Returned': 'status-returned'
+            };
+            element.className = `px-4 py-2 rounded-full text-white font-medium text-sm ${statusClasses[status] || 'status-lost'}`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderItems();
+            // Set active filter
+            document.querySelector('.filter-btn[data-filter="all"]').classList.add('bg-green-200', 'active');
+        });
+
+        // Close modal on outside click
+        document.getElementById('claimModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('claimModal')) {
+                closeClaimModal();
+            }
+        });
+    </script>
+</body>
+</html>
